@@ -6,7 +6,7 @@ from pathlib import Path
 
 from app.core.config import Settings
 from app.models.schemas import ChunkRecord, RawDocument
-from app.utils.text import chunk_text, clean_text
+from app.utils.text import chunk_text, clean_text, infer_category
 
 
 def load_raw_documents(raw_path: Path) -> list[RawDocument]:
@@ -26,6 +26,7 @@ def process_documents(documents: list[RawDocument], settings: Settings) -> list[
     chunks: list[ChunkRecord] = []
     for document in documents:
         clean_source = clean_text(document.text)
+        category = infer_category(document.url, document.titulo)
         for chunk_index, chunk in enumerate(
             chunk_text(
                 clean_source,
@@ -43,7 +44,7 @@ def process_documents(documents: list[RawDocument], settings: Settings) -> list[
                         "url": document.url,
                         "titulo": document.titulo,
                         "fecha_scrapeo": document.fecha_scrapeo,
-                        "categoria": document.categoria,
+                        "categoria": category,
                         "idioma": document.idioma,
                         "hash": document.hash,
                     },

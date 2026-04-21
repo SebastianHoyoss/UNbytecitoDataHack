@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from uuid import uuid4
 
 from app.core.config import Settings, get_settings
+from app.core.llm_config import GroqSettings
 from app.models.schemas import ChatResponse, SourceReference
 from app.rag.embeddings import build_embedding_provider
 from app.rag.generator import ExtractiveResponseGenerator, GroqResponseGenerator, NO_EVIDENCE_MESSAGE
@@ -69,7 +70,16 @@ def build_chat_service(settings: Settings | None = None) -> ChatService:
         similarity_threshold=settings.similarity_threshold,
     )
     if settings.groq_api_key:
-        generator = GroqResponseGenerator(api_key=settings.groq_api_key, model=settings.llm_model)
+        generator = GroqResponseGenerator(
+            GroqSettings(
+                api_key=settings.groq_api_key,
+                model_name=settings.llm_model,
+                temperature=settings.groq_temperature,
+                max_tokens=settings.groq_max_tokens,
+                request_timeout=settings.groq_request_timeout,
+                max_retries=settings.groq_max_retries,
+            )
+        )
     else:
         generator = ExtractiveResponseGenerator()
     return ChatService(

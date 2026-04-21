@@ -17,6 +17,11 @@ logger = logging.getLogger(__name__)
 RELEVANT_KEYWORDS = (
     "admis",
     "inscrip",
+    "fecha",
+    "cronograma",
+    "calendario",
+    "convocatoria",
+    "plazo",
     "costo",
     "matric",
     "pregrado",
