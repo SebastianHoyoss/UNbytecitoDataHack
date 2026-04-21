@@ -145,17 +145,26 @@ class PineconeVectorStore:
     def upsert(self, chunks: list[ChunkRecord], embeddings: list[list[float]]) -> None:
         records = []
         for chunk, embedding in zip(chunks, embeddings, strict=False):
+            metadata = {
+                **chunk.metadata.model_dump(mode="json"),
+                "document_id": chunk.document_id,
+                "chunk_index": chunk.chunk_index,
+                "token_count": chunk.token_count,
+                "_document": chunk.text,
+            }
+            clean_metadata: dict[str, object] = {}
+            for key, value in metadata.items():
+                if isinstance(value, (str, int, float, bool)):
+                    clean_metadata[key] = value
+                elif isinstance(value, list) and all(isinstance(item, str) for item in value):
+                    clean_metadata[key] = value
+                else:
+                    clean_metadata[key] = str(value)
             records.append(
                 (
                     chunk.id,
                     list(map(float, embedding)),
-                    {
-                        **chunk.metadata.model_dump(mode="json"),
-                        "document_id": chunk.document_id,
-                        "chunk_index": chunk.chunk_index,
-                        "token_count": chunk.token_count,
-                        "text": chunk.text,
-                    },
+                    clean_metadata,
                 )
             )
         self._index.upsert(vectors=records, namespace=self.namespace)
@@ -166,11 +175,12 @@ class PineconeVectorStore:
         hits: list[SearchHit] = []
         for match in matches:
             metadata = dict(getattr(match, "metadata", {}) or {})
+            text = str(metadata.pop("_document", metadata.pop("text", "")))
             hits.append(
                 SearchHit(
                     id=getattr(match, "id", ""),
                     score=float(getattr(match, "score", 0.0)),
-                    text=str(metadata.pop("text", "")),
+                    text=text,
                     metadata=metadata,
                 )
             )

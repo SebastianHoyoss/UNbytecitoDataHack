@@ -1,10 +1,41 @@
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, field_validator
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+STREAMLIT_SECRET_KEYS: tuple[str, ...] = (
+    "GROQ_API_KEY",
+    "GROQ_MODEL",
+    "GROQ_TEMPERATURE",
+    "GROQ_MAX_TOKENS",
+    "GROQ_REQUEST_TIMEOUT",
+    "GROQ_MAX_RETRIES",
+    "PINECONE_API_KEY",
+    "PINECONE_INDEX",
+    "PINECONE_INDEX_NAME",
+    "PINECONE_NAMESPACE",
+    "RAG_EMBEDDING_MODEL",
+    "RAG_TOP_K",
+)
+
+
+def hydrate_env_from_streamlit_secrets(keys: tuple[str, ...] = STREAMLIT_SECRET_KEYS) -> None:
+    try:
+        import streamlit as st
+
+        for key in keys:
+            if not os.environ.get(key):
+                value = st.secrets.get(key)
+                if value is not None:
+                    os.environ[key] = str(value)
+    except Exception:
+        # Streamlit no siempre está disponible en contexto API/CLI.
+        return
 
 
 class Settings(BaseSettings):
@@ -26,17 +57,21 @@ class Settings(BaseSettings):
     max_pages: int = Field(default=120, alias="MAX_PAGES")
     chunk_size: int = Field(default=1200, alias="CHUNK_SIZE")
     chunk_overlap: int = Field(default=180, alias="CHUNK_OVERLAP")
-    top_k: int = Field(default=5, alias="TOP_K")
+    top_k: int = Field(default=5, validation_alias=AliasChoices("TOP_K", "RAG_TOP_K"))
     similarity_threshold: float = Field(default=0.24, alias="SIMILARITY_THRESHOLD")
     embedding_model: str = Field(
-        default="sentence-transformers/all-MiniLM-L6-v2",
-        alias="EMBEDDING_MODEL",
+        default="all-MiniLM-L6-v2",
+        validation_alias=AliasChoices("EMBEDDING_MODEL", "RAG_EMBEDDING_MODEL"),
     )
-    llm_model: str = Field(default="llama-3.1-70b-versatile", alias="LLM_MODEL")
+    llm_model: str = Field(default="openai/gpt-oss-120b", validation_alias=AliasChoices("LLM_MODEL", "GROQ_MODEL"))
+    groq_temperature: float = Field(default=0.1, alias="GROQ_TEMPERATURE")
+    groq_max_tokens: int = Field(default=700, alias="GROQ_MAX_TOKENS")
+    groq_request_timeout: float = Field(default=60.0, alias="GROQ_REQUEST_TIMEOUT")
+    groq_max_retries: int = Field(default=2, alias="GROQ_MAX_RETRIES")
     groq_api_key: str | None = Field(default=None, alias="GROQ_API_KEY")
     pinecone_api_key: str | None = Field(default=None, alias="PINECONE_API_KEY")
     pinecone_environment: str | None = Field(default=None, alias="PINECONE_ENVIRONMENT")
-    pinecone_index_name: str = Field(default="bravobot-index", alias="PINECONE_INDEX_NAME")
+    pinecone_index_name: str = Field(default="bravobot-index", validation_alias=AliasChoices("PINECONE_INDEX_NAME", "PINECONE_INDEX"))
     pinecone_namespace: str = Field(default="bravobot", alias="PINECONE_NAMESPACE")
     pinecone_cloud: str = Field(default="aws", alias="PINECONE_CLOUD")
     pinecone_region: str = Field(default="us-east-1", alias="PINECONE_REGION")
@@ -57,6 +92,14 @@ class Settings(BaseSettings):
             raise ValueError(f"APP_ENV debe ser uno de: {', '.join(sorted(valid_values))}")
         return value
 
+    @field_validator("embedding_model")
+    @classmethod
+    def normalize_embedding_model(cls, value: str) -> str:
+        # Compatibilidad con formato corto recomendado en EJEMPLO.
+        if "/" not in value:
+            return f"sentence-transformers/{value}"
+        return value
+
     def ensure_directories(self) -> None:
         for directory in (self.data_dir, self.raw_dir, self.processed_dir, self.logs_dir):
             directory.mkdir(parents=True, exist_ok=True)
@@ -64,6 +107,7 @@ class Settings(BaseSettings):
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
+    hydrate_env_from_streamlit_secrets()
     settings = Settings()
     settings.ensure_directories()
     return settings

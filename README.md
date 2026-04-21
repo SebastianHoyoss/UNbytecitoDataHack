@@ -71,9 +71,13 @@ Usa `.env.example` como base y completa al menos las claves de producción.
 - `PINECONE_ENVIRONMENT`: compatibilidad si tu índice usa ese esquema
 - `PINECONE_INDEX_NAME`: nombre del índice
 - `PINECONE_NAMESPACE`: namespace para BravoBot
-- `EMBEDDING_MODEL`: modelo de embeddings local
-- `LLM_MODEL`: modelo Groq
+- `RAG_EMBEDDING_MODEL`: modelo de embeddings recomendado (`all-MiniLM-L6-v2`)
+- `RAG_TOP_K`: número de resultados recuperados por consulta
+- `GROQ_MODEL`: modelo recomendado para generación (`openai/gpt-oss-120b`)
+- `GROQ_TEMPERATURE`, `GROQ_MAX_TOKENS`, `GROQ_REQUEST_TIMEOUT`, `GROQ_MAX_RETRIES`: parámetros de inferencia
 - `APP_ENV`: `local`, `development`, `staging` o `production`
+
+También se mantienen alias retrocompatibles: `EMBEDDING_MODEL`, `TOP_K` y `LLM_MODEL`.
 
 En desarrollo, si no defines Pinecone, el proyecto usa un vector store local para no bloquear la demo. En producción, configura Pinecone.
 

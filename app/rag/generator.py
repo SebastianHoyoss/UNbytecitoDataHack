@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from app.core.llm_config import GroqSettings, build_groq_llm
 from app.models.schemas import SearchHit
 
 NO_EVIDENCE_MESSAGE = (
@@ -55,14 +56,8 @@ class ResponseGenerator:
 
 
 class GroqResponseGenerator(ResponseGenerator):
-    def __init__(self, api_key: str, model: str):
-        try:
-            from groq import Groq
-        except ImportError as exc:
-            raise RuntimeError("Falta instalar groq. Revisa requirements.txt.") from exc
-
-        self.client = Groq(api_key=api_key)
-        self.model = model
+    def __init__(self, settings: GroqSettings):
+        self.client = build_groq_llm(settings)
         self.system_prompt = load_system_prompt()
 
     def generate(self, question: str, context: str, hits: list[SearchHit], confidence: float) -> GeneratorResult:
@@ -85,15 +80,13 @@ Instrucciones:
 - Cierra con una lista corta de URLs usadas en la respuesta.
 """.strip()
 
-        completion = self.client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": self.system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.1,
+        completion = self.client.invoke(
+            [
+                ("system", self.system_prompt),
+                ("human", user_prompt),
+            ]
         )
-        content = completion.choices[0].message.content or NO_EVIDENCE_MESSAGE
+        content = getattr(completion, "content", None) or NO_EVIDENCE_MESSAGE
         return GeneratorResult(answer=content.strip(), citations=citations)
 
 
