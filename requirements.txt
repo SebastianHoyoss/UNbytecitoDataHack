@@ -10,7 +10,7 @@ trafilatura==2.0.0
 pinecone==5.0.1
 groq==0.18.0
 sentence-transformers==3.4.1
-numpy==1.26.4
+numpy>=2.0.0
 lxml==5.3.0
 tenacity==9.0.0
 pytest==8.3.4
