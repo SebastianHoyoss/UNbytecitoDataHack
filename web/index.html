@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BravoBot | I.U. Pascual Bravo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f7fb;
+        --panel: rgba(255, 255, 255, 0.82);
+        --text: #0f172a;
+        --muted: #475569;
+        --accent: #0f766e;
+        --border: rgba(15, 23, 42, 0.1);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text);
+        background: radial-gradient(circle at top left, #e2f0ff 0, transparent 30%),
+                    linear-gradient(135deg, #f8fafc 0%, #edf7ff 45%, #fdfdfd 100%);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      .card {
+        width: min(960px, 100%);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 32px;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(10px);
+      }
+      h1 { margin: 0 0 12px; font-size: clamp(2rem, 5vw, 4rem); }
+      p { line-height: 1.6; color: var(--muted); }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; }
+      .tile {
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 18px;
+        background: rgba(255,255,255,0.9);
+      }
+      .tile strong { display: block; margin-bottom: 8px; }
+      a.button {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 18px;
+        border-radius: 999px;
+        color: white;
+        background: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <h1>BravoBot</h1>
+      <p>Asistente universitario para aspirantes de la I.U. Pascual Bravo. Esta landing técnica existe para despliegue en Vercel y redirige al demo operativo de Streamlit o al API según tu arquitectura.</p>
+      <div class="grid">
+        <div class="tile"><strong>Ingesta</strong><span>Scraping respetuoso con robots.txt, rate limiting y retry policy.</span></div>
+        <div class="tile"><strong>RAG</strong><span>Recuperación de evidencia oficial, chunking y control anti-alucinación.</span></div>
+        <div class="tile"><strong>Despliegue</strong><span>API para Render y landing ligera para Vercel.</span></div>
+      </div>
+      <a class="button" href="https://pascualbravo.edu.co/" target="_blank" rel="noreferrer">Sitio oficial</a>
+    </main>
+  </body>
+  </html>

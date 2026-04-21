@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: bravobot-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: GROQ_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_ENVIRONMENT
+        sync: false
+      - key: PINECONE_INDEX_NAME
+        value: bravobot-index
+      - key: PINECONE_NAMESPACE
+        value: bravobot
+      - key: API_BASE_URL
+        value: https://bravobot-api.onrender.com
+      - key: ALLOW_LOCAL_VECTORSTORE
+        value: false
+  - type: web
+    name: bravobot-ui
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app/ui/streamlit_app.py --server.address 0.0.0.0 --server.port $PORT
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: BRAVOBOT_API_URL
+        value: https://bravobot-api.onrender.com
