@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-04-21T23:35:00.725332+00:00",
+  "documents_indexed": 92,
+  "chunks_indexed": 1381,
+  "category_counts": {
+    "admisiones": 222,
+    "general": 198,
+    "oferta_academica": 961
+  },
+  "latest_sources": [
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/programacionbienestaruniversitario",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/piscina-institucional",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/pascualizate",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/salud",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/deportes-y-recreacion",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/cultura",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/promocion-socioeconomica",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/desarrollo-humano",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios/bienestar-virtual",
+    "https://pascualbravo.edu.co/academico/bienestar-universitario/servicios"
+  ],
+  "categories": [
+    "admisiones",
+    "general",
+    "oferta_academica"
+  ]
+}

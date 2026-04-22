@@ -1,0 +1,32 @@
+{
+  "scraped_at": "2026-04-21T22:44:07.199043+00:00",
+  "discovered_urls": 120,
+  "documents_saved": 92,
+  "sources": [
+    "https://pascualbravo.edu.co",
+    "http://pascualbravo.edu.co/aspirantes",
+    "http://pascualbravo.edu.co/facultades/facultad-de-ingenieria/programas",
+    "http://pascualbravo.edu.co/facultades/facultad-de-produccion-y-diseno/programas",
+    "http://pascualbravo.edu.co/direccionamiento-estrategico/planes-y-programas",
+    "http://pascualbravo.edu.co/direccionamiento-estrategico/planes-y-programas/plan-de-accion",
+    "http://pascualbravo.edu.co/direccionamiento-estrategico/planes-y-programas/plan-de-desarrollo",
+    "http://pascualbravo.edu.co/direccionamiento-estrategico/planes-y-programas/proyectos-de-inversion",
+    "http://pascualbravo.edu.co/direccionamiento-estrategico/planes-y-programas/plan-de-participacion-ciudadana",
+    "http://pascualbravo.edu.co/academico/programa-de-ingles",
+    "http://pascualbravo.edu.co/academico/programa-de-ingles/cronograma",
+    "http://pascualbravo.edu.co/investigacion/direccion-de-tecnologia-e-innovacion",
+    "http://pascualbravo.edu.co/extension/educacion-continua/programas-disenados-para-empresas",
+    "http://pascualbravo.edu.co/extension/educacion-continua/programa-sillas-vacias",
+    "http://pascualbravo.edu.co/facultades/facultad-de-ingenieria/programas/ingenieria-de-software",
+    "http://pascualbravo.edu.co/facultades/facultad-de-ingenieria/programas/ingenieria-electrica",
+    "http://pascualbravo.edu.co/facultades/facultad-de-ingenieria/programas/ingenieria-mecanica",
+    "http://pascualbravo.edu.co/facultades/facultad-de-ingenieria/programas/tecnologia-en-desarrollo-de-software",
+    "http://pascualbravo.edu.co/facultades/facultad-de-ingenieria/programas/tecnologia-en-gestion-del-mantenimiento-aeronautico",
+    "http://pascualbravo.edu.co/facultades/facultad-de-ingenieria/programas/tecnologia-en-operacion-integral-del-transporte-virtual"
+  ],
+  "categories": [
+    "admisiones",
+    "general",
+    "oferta_academica"
+  ]
+}
