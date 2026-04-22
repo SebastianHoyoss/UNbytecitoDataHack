@@ -40,7 +40,13 @@ if submitted and query:
     st.session_state.chat_paper = None
     st.session_state.chat_history = []
     with st.spinner("Buscando y resumiendo papers..."):
-        st.session_state.results = orchestrate(query, language=language, max_results=max_results, compare=False)
+        try:
+            st.session_state.results = orchestrate(query, language=language, max_results=max_results, compare=False)
+        except Exception as e:
+            if "429" in str(e):
+                st.error("ArXiv está limitando las peticiones. Espera 2-3 minutos e intenta de nuevo.")
+            else:
+                st.error(f"Error al buscar papers: {e}")
 
 if st.session_state.results:
     result = st.session_state.results
