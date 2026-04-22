@@ -1,1 +1,0 @@
-"""Pydantic models used across BravoBot."""
