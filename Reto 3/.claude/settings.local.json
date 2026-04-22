@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python3 -c \" import sys, json for line in sys.stdin: try: obj = json.loads\\(line\\) if obj.get\\('type'\\) == 'user' or obj.get\\('role'\\) in ['user','assistant']: content = obj.get\\('content',''\\) or obj.get\\('message',{}\\).get\\('content',''\\) if isinstance\\(content, list\\): for c in content: if isinstance\\(c, dict\\) and c.get\\('type'\\) == 'text': print\\(c['text'][:500]\\) elif isinstance\\(content, str\\): print\\(content[:500]\\) except: pass \")",
+      "Bash(python3 -c \" import json with open\\('/c/Users/violeta/.claude/projects/C--Users-violeta-Documents-DataHack2026-Retos-Reto-3/31a9724d-af96-4331-a689-3548ee87edc5.jsonl'\\) as f: for line in f: try: obj = json.loads\\(line\\) if obj.get\\('type'\\) == 'user' and 'message' in obj: content = obj['message'].get\\('content', ''\\) if isinstance\\(content, list\\): for c in content: if isinstance\\(c, dict\\) and c.get\\('type'\\) == 'tool_result': for item in c.get\\('content', []\\): if isinstance\\(item, dict\\) and item.get\\('type'\\) == 'text': text = item['text'] if len\\(text\\) > 200: print\\('TOOL RESULT:', text[:2000]\\) print\\('---'\\) except: pass \")",
+      "Bash(python3 *)"
+    ]
+  }
+}

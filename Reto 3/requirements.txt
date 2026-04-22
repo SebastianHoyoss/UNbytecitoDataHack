@@ -1,0 +1,8 @@
+groq
+arxiv
+#scholarly Se reemplazó por semanticscholar
+streamlit
+python-dotenv
+requests
+semanticscholar
+
