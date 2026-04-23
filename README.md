@@ -23,6 +23,8 @@ pip install -r requirements.txt
 Crea un archivo `.env` en la raíz del proyecto:
 ```
 GROQ_API_KEY=tu_api_key_aqui
+PINECONE_API_KEY=api_key
+PINECONE_INDEX=papers-rag
 ```
 
 ## 4. Ejecutar la aplicación
