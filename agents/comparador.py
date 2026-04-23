@@ -1,15 +1,11 @@
-from groq import Groq
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+from utils.groq_client import chat
 
 def compare_papers(list_papers: list[dict], language: str, query: str = "") ->str:
 
     papers_text=""
     for i, paper in enumerate(list_papers):
-        papers_text=papers_text+f"Paper {i+1}. Title {paper['title']}.\nSummary {paper['abstract']}.\n\n"
+        abstract = paper['abstract'][:400]
+        papers_text=papers_text+f"Paper {i+1}. Title {paper['title']}.\nSummary {abstract}.\n\n"
 
     query_context = f"The user's original research question is: \"{query}\". Use this to assess how relevant each article's value proposition is to this specific question." if query else ""
 
@@ -42,11 +38,7 @@ def compare_papers(list_papers: list[dict], language: str, query: str = "") ->st
         {papers_text}""".format(papers_text=papers_text, query_context=query_context)
     
 
-    response_compare = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "user", "content": prompt_compare}
-        ])
+    response_compare = chat("llama-3.3-70b-versatile", [{"role": "user", "content": prompt_compare}])
     
     prompt_output ="""
     MANDATORY: Write your ENTIRE response in {language}. Every word, heading, and table cell must be in {language}. No exceptions.
@@ -77,14 +69,9 @@ def compare_papers(list_papers: list[dict], language: str, query: str = "") ->st
 
     INPUT JSON:
         {response_compare}
-    """.format(response_compare=response_compare.choices[0].message.content, language=language, query=query)
+    """.format(response_compare=response_compare, language=language, query=query)
 
-    response_output = client.chat.completions.create(
-        model="llama-3.3-70b-versatile", 
-        messages=[
-            {"role": "user", "content": prompt_output}
-        ])
-    return response_output.choices[0].message.content
+    return chat("llama-3.3-70b-versatile", [{"role": "user", "content": prompt_output}])
 
 
 if __name__ == "__main__":

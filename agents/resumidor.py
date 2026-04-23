@@ -1,11 +1,4 @@
-from groq import Groq
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
-# Crear un cliente de Groq
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+from utils.groq_client import chat
 
 # Función para resumir un paper dado su título y abstract
 def summary_paper(title:str, abstract:str, language:str)-> str:
@@ -45,13 +38,7 @@ def summary_paper(title:str, abstract:str, language:str)-> str:
  
 
     # Realizar una consulta de chat a Groq
-    response = client.chat.completions.create(
-       model="llama-3.3-70b-versatile",
-       messages=[
-        {"role": "user", "content": prompt}
-        ]
-        )
-    return response.choices[0].message.content
+    return chat("llama-3.3-70b-versatile", [{"role": "user", "content": prompt}])
 
 if __name__ == "__main__":
     abstract = "We introduce Autoregressive Retrieval Augmentation (AR-RAG), a novel paradigm that enhances image generation by autoregressively incorporating knearest neighbor retrievals at the patch level. Unlike prior methods that perform a single, static retrieval before generation and condition the entire gene"

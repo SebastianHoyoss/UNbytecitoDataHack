@@ -1,18 +1,14 @@
-from groq import Groq
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+from utils.groq_client import chat
 
 
 def state_of_the_art(list_papers: list[dict], language: str, query: str = "") -> str:
     papers_text = ""
     for i, paper in enumerate(list_papers):
+        abstract = paper['abstract'][:400]
         papers_text = papers_text + (
             f"Paper {i + 1}. Title {paper['title']}.\n"
             f"Date {paper.get('date', 'Not specified')}.\n"
-            f"Summary {paper['abstract']}.\n\n"
+            f"Summary {abstract}.\n\n"
         )
 
     query_context = (
@@ -52,12 +48,7 @@ def state_of_the_art(list_papers: list[dict], language: str, query: str = "") ->
     INPUT ARTICLES:
         {papers_text}""".format(papers_text=papers_text, query_context=query_context)
 
-    response_extract = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "user", "content": prompt_extract}
-        ]
-    )
+    response_extract = chat("llama-3.3-70b-versatile", [{"role": "user", "content": prompt_extract}])
 
     prompt_output = """
     MANDATORY: Write your ENTIRE response in {language}. No exceptions.
@@ -85,16 +76,9 @@ def state_of_the_art(list_papers: list[dict], language: str, query: str = "") ->
 
     INPUT JSON:
         {response_extract}
-    """.format(response_extract=response_extract.choices[0].message.content, language=language, query=query)
+    """.format(response_extract=response_extract, language=language, query=query)
 
-    response_output = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "user", "content": prompt_output}
-        ]
-    )
-
-    return response_output.choices[0].message.content
+    return chat("llama-3.3-70b-versatile", [{"role": "user", "content": prompt_output}])
 
 
 if __name__ == "__main__":

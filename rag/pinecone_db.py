@@ -51,7 +51,7 @@ def upsert_paper(arxiv_id: str, chunks: list[str]):
     _index.upsert(vectors=vectors, namespace=arxiv_id)
 
 
-def query(arxiv_id: str, question: str, top_k: int = 7) -> list[str]:
+def query(arxiv_id: str, question: str, top_k: int = 4) -> list[str]:
     _require_index()
     q_embedding = embed([question])[0]
     results = _index.query(

@@ -1,26 +1,17 @@
 import arxiv
-from groq import Groq
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-_groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+from utils.groq_client import chat
 
 
 def _optimize_query(query: str) -> str:
-    response = _groq_client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{
-            "role": "user",
-            "content": (
-                "Convert this search query into an optimized English academic search query for ArXiv. "
-                "Return ONLY the query string, no explanations, no quotes. "
-                "If already in English and well-formed, return it improved with relevant technical synonyms.\n"
-                f"Query: {query}"
-            )
-        }]
-    )
-    return response.choices[0].message.content.strip()
+    return chat("llama-3.3-70b-versatile", [{
+        "role": "user",
+        "content": (
+            "Convert this search query into an optimized English academic search query for ArXiv. "
+            "Return ONLY the query string, no explanations, no quotes. "
+            "If already in English and well-formed, return it improved with relevant technical synonyms.\n"
+            f"Query: {query}"
+        )
+    }]).strip()
 
 
 def search_papers(query: str, max_results: int = 5) -> list[dict]:
