@@ -32,3 +32,5 @@ PINECONE_INDEX=papers-rag
 ```bash
 streamlit run app.py
 ```
+# Desplegado
+https://unbytecitodatahack-atdlmkbl4ko7sgre6nvsme.streamlit.app/
