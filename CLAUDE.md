@@ -6,8 +6,7 @@ MVP multiagente que permite al usuario escribir un tema o pregunta de investigac
 - Papers relevantes de ArXiv resumidos individualmente
 - Análisis comparativo entre los papers seleccionados
 - Síntesis del estado del arte alineada con la pregunta de investigación
-- Chat RAG sobre cualquier paper encontrado (vectorizado en Pinecone)
-- Todo en el idioma que el usuario elija (español / english)
+- Chat RAG sobre cualquier paper encontrado (vectorizado en Pinecone), en español o inglés
 
 ---
 
@@ -29,6 +28,7 @@ streamlit run app.py
 Requiere archivo `.env` en la raíz con:
 ```
 GROQ_API_KEY=tu_api_key
+GROQ_API_KEY_2=tu_segunda_api_key   # opcional, para rotación automática
 PINECONE_API_KEY=tu_api_key
 PINECONE_INDEX=papers-rag
 ```
@@ -50,7 +50,9 @@ PINECONE_INDEX=papers-rag
 │   ├── chunker.py              ← Divide texto en chunks (500 chars, 100 overlap)
 │   ├── embedder.py             ← Genera embeddings con sentence-transformers (384 dims)
 │   ├── pinecone_db.py          ← Sube y consulta vectores en Pinecone
-│   └── rag_agent.py            ← Responde preguntas usando contexto recuperado + Groq
+│   └── rag_agent.py            ← Traduce pregunta, responde con contexto recuperado + Groq
+├── utils/
+│   └── groq_client.py          ← Cliente Groq compartido con rotación automática de API keys
 ├── requirements.txt
 ├── .env                        ← NO subir a git
 ├── .gitignore
@@ -89,11 +91,13 @@ embedder.embed()                ← sentence-transformers all-MiniLM-L6-v2 (384 
         ↓
 pinecone_db.upsert_paper()      ← Sube vectores a Pinecone (namespace = arxiv_id)
         ↓
-[Usuario escribe pregunta]
+[Usuario escribe pregunta en cualquier idioma]
         ↓
-pinecone_db.query()             ← Recupera top-4 chunks más similares
+rag_agent.translate_to_english()   ← Traduce pregunta a inglés para búsqueda semántica
         ↓
-rag_agent.answer_question()     ← Groq genera respuesta con el contexto recuperado
+pinecone_db.query()             ← Recupera top-4 chunks más similares (en inglés)
+        ↓
+rag_agent.answer_question()     ← Groq responde en el idioma de la pregunta original
 ```
 
 ---
@@ -135,13 +139,16 @@ Cada paper se vectoriza bajo su arxiv_id como namespace. Esto permite:
 - Buscar solo dentro del paper seleccionado (sin mezclar contenido)
 - Detectar si ya fue indexado antes (evita re-descargar y re-vectorizar)
 
+### Por qué traducir la pregunta antes de buscar en Pinecone
+Los chunks están en inglés (papers de ArXiv). Una pregunta en español genera un embedding diferente que no coincide bien con chunks en inglés. La solución es traducir la pregunta a inglés solo para la búsqueda semántica, pero pasarle la pregunta original a Groq para que responda en el idioma del usuario.
+
+### Rotación de API keys de Groq
+`utils/groq_client.py` expone una función `chat()` usada por todos los agentes. Si la key principal recibe un 429, cambia automáticamente a `GROQ_API_KEY_2` y reintenta. Si ambas fallan, lanza el error.
+
 ### Gestión de tokens (API gratuita)
 - Abstract truncado a 400 chars en comparador e investigador
 - RAG usa modelo 8B (límite propio de 500K/día) para no consumir cuota del 70B
 - top_k=4 en Pinecone para reducir contexto enviado al LLM
-
-### Idiomas independientes
-El usuario elige idioma del resumen, del análisis y del chat por separado. Todos aceptan `"español"` o `"english"`. Instrucción `MANDATORY` al inicio de cada prompt para forzar el idioma sin que el cuerpo del prompt biasee el output.
 
 ---
 
@@ -189,8 +196,9 @@ El `arxiv_id` se extrae de `url` con regex en `rag/loader.py` y se usa como name
 
 ### rag_agent.py
 - Modelo: `llama-3.1-8b-instant`
-- Formato de respuesta estructurado en 3 partes: respuesta directa + evidencia + limitación
-- Contexto: top-4 chunks de Pinecone unidos con separadores
+- `translate_to_english()` traduce la pregunta antes de buscar en Pinecone
+- Respuesta estructurada: respuesta directa + evidencia del paper + limitación (si aplica)
+- Groq recibe la pregunta original → responde en el idioma del usuario automáticamente
 
 ---
 
@@ -198,11 +206,14 @@ El `arxiv_id` se extrae de `url` con regex en `rag/loader.py` y se usa como name
 
 | Problema | Causa | Solución aplicada |
 |---|---|---|
-| HTTP 429 de ArXiv | Rate limiting por muchas peticiones seguidas | `delay_seconds=5, num_retries=5` + mensaje de error amigable en UI |
-| HTTP 429 de Groq | Límite diario de 100K tokens (70B) | RAG usa modelo 8B con límite propio; abstracts truncados |
+| HTTP 429 de ArXiv | Rate limiting por muchas peticiones seguidas | `delay_seconds=5, num_retries=5` + mensaje amigable en UI |
+| HTTP 429 de Groq | Límite diario de 100K tokens (70B) | Rotación automática entre 2 keys en `utils/groq_client.py` |
+| Tokens agotados rápido | Abstracts completos + RAG con modelo grande | Abstracts truncados a 400 chars; RAG en modelo 8B |
 | Papers irrelevantes | Query en español no coincide con papers en inglés | `_optimize_query()` traduce antes de buscar |
+| Chat en español con chunks en inglés | Embedding en español no coincide con chunks en inglés | `translate_to_english()` antes de query a Pinecone |
 | Botones reinician la app | Streamlit re-ejecuta el script completo | `st.session_state` persiste todos los resultados |
 | Mezcla de idiomas en output | Prompt en español biasea hacia español | Instrucción `MANDATORY` al inicio + cuerpo del prompt en inglés |
+| Fallo de Pinecone en chat | Timeout o red inestable | `try/except` en indexación y en respuesta del chat |
 | Chat con paper diferente | Historial del chat anterior persiste | Al seleccionar nuevo paper se limpia `chat_history` automáticamente |
 
 ---
@@ -213,10 +224,9 @@ El `arxiv_id` se extrae de `url` con regex en `rag/loader.py` y se usa como name
 - [x] Fase 2 — Agentes (buscador, resumidor, comparador, orquestador, investigador)
 - [x] Fase 3 — Interfaz Streamlit
 - [x] Fase 3.5 — Sistema RAG con Pinecone (chat por paper)
-- [ ] Fase 4 — Pruebas completas y ajuste de prompts
+- [x] Fase 4 — Pruebas completas y ajuste de prompts
 
 ## Pendiente / posibles mejoras
 
 - Añadir segunda fuente de datos (Semantic Scholar o PubMed) al buscador sin tocar el resto
 - Unificar el prompt de `resumidor.py` a inglés (cuerpo mezclado español/inglés)
-- Rotación de API keys de Groq para mayor cuota diaria
