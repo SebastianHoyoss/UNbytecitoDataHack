@@ -3,7 +3,13 @@ from agents.orquestador import orchestrate
 from agents.comparador import compare_papers
 from rag.loader import get_arxiv_id, download_and_extract
 from rag.chunker import chunk_text
-from rag.pinecone_db import is_indexed, upsert_paper, query as pinecone_query
+from rag.pinecone_db import (
+    is_indexed,
+    upsert_paper,
+    query as pinecone_query,
+    pinecone_ready,
+    pinecone_config_error,
+)
 from rag.rag_agent import answer_question
 
 st.title("Asistente de Investigación Académica")
@@ -112,6 +118,13 @@ if st.session_state.chat_paper:
     st.subheader(f"💬 Chat: {paper['title'][:70]}...")
 
     st.selectbox("Idioma del chat", ["español", "english"], key="chat_lang")
+
+    if not pinecone_ready():
+        st.error(
+            "No se puede usar el chat RAG porque Pinecone no está configurado. "
+            f"{pinecone_config_error()}"
+        )
+        st.stop()
 
     if arxiv_id not in st.session_state.chat_indexed:
         if not is_indexed(arxiv_id):
